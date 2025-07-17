@@ -10,7 +10,6 @@ data = response.json()
 
 prices = data['data']['prices']
 
-
 class account:
     def __init__(self, ammount):
         self.ammount = ammount
@@ -28,7 +27,6 @@ class account:
             self.price = -1
         else:
             print("you have not bought any")
-
 
 investmentAccount = account(1000)
 index1 = 0
@@ -58,17 +56,14 @@ with open('example.txt', 'w') as file:
         i +=1
 '''
 
-
 def average(arr):
     return sum(arr) / len(arr)
-
 
 def geometricAverage(arr):
     sum = np.log10(arr[0])
     for i in range(1, len(arr)):
         sum += np.log10(arr[i])
     return 10 ** (sum / len(arr))
-
 
 def movingAverage(priceArray, lookback):
     movingAverageArray = [-1.0]
@@ -88,7 +83,6 @@ def movingAverage(priceArray, lookback):
             i3 += 1
     return movingAverageArray
 
-
 def geometricMovingAverage(priceArray, lookback):
     movingAverageArray = [-1.0]
     movingAverageArray.remove(-1.0)
@@ -104,7 +98,6 @@ def geometricMovingAverage(priceArray, lookback):
         tempArray.append(priceArray[i2])
     return movingAverageArray
 
-
 def sd(priceArray, lookback):
     movingAverageArray = [-1.0]
     movingAverageArray.remove(-1.0)
@@ -119,7 +112,6 @@ def sd(priceArray, lookback):
         tempArray.pop(0)
         tempArray.append(priceArray[i2])
     return movingAverageArray
-
 
 def bollinger_bands(priceArray, lookback, k=2):
     """
@@ -148,29 +140,23 @@ def bollinger_bands(priceArray, lookback, k=2):
             lower_band.append(middle_band[i] - (std_dev[i] * k))
     return upper_band, middle_band, lower_band
 
-
 def rsi(priceArray, period=14):
     """
     Calculates the Relative Strength Index (RSI).
-
     Args:
         priceArray: A list of prices.
         period: The period for calculating RSI (default is 14).
-
     Returns:
         A list containing RSI values. First (period) values will be -1.0 (not enough data).
     """
     if len(priceArray) < period + 1:
         return [-1.0] * len(priceArray)
-
     # Calculate price changes
     price_changes = []
     for i in range(1, len(priceArray)):
         price_changes.append(priceArray[i] - priceArray[i - 1])
-
     # Initialize RSI array with -1.0 for first period values
     rsi_values = [-1.0] * period
-
     # Calculate gains and losses
     gains = []
     losses = []
@@ -206,9 +192,7 @@ def rsi(priceArray, period=14):
         else:
             rs = avg_gain / avg_loss
             rsi_values.append(100.0 - (100.0 / (1.0 + rs)))
-
     return rsi_values
-
 
 def trading_strategy(prices, short_ma=5, long_ma=15, rsi_period=14, initial_balance=1000):
     """
