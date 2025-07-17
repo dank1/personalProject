@@ -115,7 +115,7 @@ def sd(priceArray, lookback):
     for i2 in range(0, lookback - 1):
         movingAverageArray.append(-1.0)
     for i2 in range(lookback, len(priceArray)):
-        movingAverageArray.append(np.std(tempArray))
+        movingAverageArray.append(float(np.std(tempArray)))
         tempArray.pop(0)
         tempArray.append(priceArray[i2])
     return movingAverageArray
