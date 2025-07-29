@@ -272,6 +272,7 @@ def plot_trading_results(prices, trades, ma_short=None, ma_long=None, rsi_vals=N
     plt.show()
 
     # Optionally plot RSI
+    '''
     if rsi_vals is not None:
         plt.figure(figsize=(14, 3))
         plt.plot(rsi_vals, label='RSI', color='purple')
@@ -284,7 +285,7 @@ def plot_trading_results(prices, trades, ma_short=None, ma_long=None, rsi_vals=N
         plt.grid(True)
         plt.tight_layout()
         plt.show()
-
+        '''
 
 print("Moving-Average-1  Moving-Average-2")
 
