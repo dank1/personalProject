@@ -1,59 +1,64 @@
 """
-Daily closing prices for Ethereum (ETH).
+Daily closing prices for Ethereum (ETH/USD).
 
-Uses CoinGecko public API (works where Binance returns HTTP 451, e.g. US).
+Uses Coinbase Exchange public candles with 1-day granularity (86400s). CoinGecko's
+`/ohlc` endpoint uses multi-day candles for long ranges (e.g. ~4-day), which is not
+one close per calendar day.
 """
 
 from __future__ import annotations
 
 import argparse
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 
 import requests
 
-# CoinGecko OHLC: for `days` in 180, 365, max — candles are daily (shorter `days` uses intraday candles).
-COINGECKO_ETH_OHLC = "https://api.coingecko.com/api/v3/coins/ethereum/ohlc"
+# Coinbase Exchange: max 300 candles per request for daily granularity.
+COINBASE_ETH_CANDLES = "https://api.exchange.coinbase.com/products/ETH-USD/candles"
+GRANULARITY_1_DAY_S = 86400
+MAX_CANDLES_PER_REQUEST = 300
 
 
 def get_eth_daily_closes(limit: int = 365) -> list[tuple[date, float]]:
     """
-    Return (calendar date in UTC, daily close in USD) for each candle.
+    Return (UTC calendar date, daily close in USD) — one row per day.
 
-    Requests enough history from CoinGecko (daily granularity), then returns the
-    last `limit` days. Cap is soft-limited by what `days=max` returns.
+    Paginates backwards in chunks of up to 300 days until `limit` days are collected
+    or history runs out.
     """
     limit = max(1, limit)
-    # Need daily OHLC: use 365 or max (not 30 — that returns 4h candles, not daily closes).
-    cg_days = "max" if limit > 365 else "365"
-    params = {"vs_currency": "usd", "days": cg_days}
-    headers = {
-        "Accept": "application/json",
-        "User-Agent": "personalProject/Prices.py (educational)",
-    }
-    response = requests.get(
-        COINGECKO_ETH_OHLC,
-        params=params,
-        headers=headers,
-        timeout=30,
-    )
-    response.raise_for_status()
-    rows = response.json()
-    if not isinstance(rows, list):
-        raise ValueError(f"Unexpected CoinGecko response: {rows!r}")
+    by_day: dict[date, float] = {}
+    end = datetime.now(timezone.utc)
 
-    out: list[tuple[date, float]] = []
-    for row in rows:
-        # [timestamp_ms, open, high, low, close]
-        ts_ms, _, _, _, close = row
-        dt_utc = datetime.fromtimestamp(ts_ms / 1000.0, tz=timezone.utc)
-        out.append((dt_utc.date(), float(close)))
+    while len(by_day) < limit:
+        start = end - timedelta(days=MAX_CANDLES_PER_REQUEST)
+        params = {
+            "granularity": GRANULARITY_1_DAY_S,
+            "start": start.isoformat(),
+            "end": end.isoformat(),
+        }
+        response = requests.get(COINBASE_ETH_CANDLES, params=params, timeout=30)
+        response.raise_for_status()
+        batch = response.json()
+        if not batch:
+            break
+        # Each row: [ time, low, high, open, close, volume ] — time = bucket start (UTC)
+        for row in batch:
+            ts, _, _, _, close, _ = row
+            day = datetime.fromtimestamp(int(ts), tz=timezone.utc).date()
+            by_day[day] = float(close)
+        oldest_ts = min(int(c[0]) for c in batch)
+        end = datetime.fromtimestamp(oldest_ts, tz=timezone.utc) - timedelta(seconds=1)
+        if len(batch) < 2:
+            break
 
-    return out[-limit:] if len(out) >= limit else out
+    ordered = sorted(by_day.items(), key=lambda x: x[0])
+    return ordered[-limit:]
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="ETH daily closing prices in USD (CoinGecko)",
+        description="ETH/USD daily closing prices (Coinbase Exchange, 1d candles)",
     )
     parser.add_argument(
         "--days",
