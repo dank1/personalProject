@@ -1,7 +1,12 @@
 import requests
 from datetime import datetime
+from pathlib import Path
 import numpy as np
 import matplotlib.pyplot as plt
+
+# Resolve data files next to this script (works regardless of cwd)
+_SCRIPT_DIR = Path(__file__).resolve().parent
+EXAMPLE_TXT = _SCRIPT_DIR / "example.txt"
 
 url = 'https://api.coinbase.com/v2/prices/BTC-USD/historic?period=week'
 response = requests.get(url)
@@ -287,10 +292,22 @@ def plot_trading_results(prices, trades, ma_short=None, ma_long=None, rsi_vals=N
         plt.show()
         '''
 
+def plot_price_array(priceArray, title="Price Array"):
+    """Plot a 1D price series using matplotlib."""
+    plt.figure(figsize=(14, 4))
+    plt.plot(priceArray, label="Price", color="black")
+    plt.title(title)
+    plt.xlabel("Index")
+    plt.ylabel("Price (USD)")
+    plt.grid(True, alpha=0.3)
+    plt.legend()
+    plt.tight_layout()
+    plt.show()
+
 print("Moving-Average-1  Moving-Average-2")
 
 pricesFloat = [0.0]
-with open('example.txt', 'r') as file:
+with open(EXAMPLE_TXT, "r") as file:
     i1 = 0
     content = " "
     dateFileString = ""
@@ -309,6 +326,7 @@ with open('example.txt', 'r') as file:
     # prices.remove(0.0)
     # sdArray = sd(prices, 3)
     pricesFloat.remove(0.0)
+    plot_price_array(pricesFloat, title="BTC-USD Price (priceArray)")
     lookback1 = 2
     lookback2 = 3
     maArray1 = movingAverage(pricesFloat, lookback1)
