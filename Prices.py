@@ -28,6 +28,10 @@ def get_eth_daily_closes(limit: int = 365) -> list[tuple[date, float]]:
     """
     limit = max(1, limit)
     by_day: dict[date, float] = {}
+    by_open: dict[date, float] = {}
+    by_high: dict[date, float] = {}
+    by_low: dict[date, float] = {}
+    by_volume: dict[date, float] = {}
     end = datetime.now(timezone.utc)
 
     while len(by_day) < limit:
@@ -47,6 +51,10 @@ def get_eth_daily_closes(limit: int = 365) -> list[tuple[date, float]]:
             ts, low, high, open_price, close, volume = row
             day = datetime.fromtimestamp(int(ts), tz=timezone.utc).date()
             by_day[day] = float(close)
+            by_open[day] = float(open_price)
+            by_high[day] = float(high)
+            by_low[day] = float(low)
+            by_volume[day] = float(volume)
         oldest_ts = min(int(c[0]) for c in batch)
         end = datetime.fromtimestamp(oldest_ts, tz=timezone.utc) - timedelta(seconds=1)
         if len(batch) < 2:
