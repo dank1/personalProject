@@ -44,7 +44,7 @@ def get_eth_daily_closes(limit: int = 365) -> list[tuple[date, float]]:
             break
         # Each row: [ time, low, high, open, close, volume ] — time = bucket start (UTC)
         for row in batch:
-            ts, _, _, _, close, _ = row
+            ts, low, high, open_price, close, volume = row
             day = datetime.fromtimestamp(int(ts), tz=timezone.utc).date()
             by_day[day] = float(close)
         oldest_ts = min(int(c[0]) for c in batch)
