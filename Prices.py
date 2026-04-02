@@ -27,7 +27,7 @@ def get_eth_daily_closes(limit: int = 365) -> list[tuple[date, float]]:
     or history runs out.
     """
     limit = max(1, limit)
-    by_day: dict[date, float] = {}
+    by_day: dict[date, float, float, float, float, float] = {}
     by_open: dict[date, float] = {}
     by_high: dict[date, float] = {}
     by_low: dict[date, float] = {}
@@ -50,7 +50,7 @@ def get_eth_daily_closes(limit: int = 365) -> list[tuple[date, float]]:
         for row in batch:
             ts, low, high, open_price, close, volume = row
             day = datetime.fromtimestamp(int(ts), tz=timezone.utc).date()
-            by_day[day] = float(close)
+            by_day[day] = (float(low), float(high), float(open_price), float(close), float(volume))
             by_open[day] = float(open_price)
             by_high[day] = float(high)
             by_low[day] = float(low)
@@ -61,6 +61,12 @@ def get_eth_daily_closes(limit: int = 365) -> list[tuple[date, float]]:
             break
 
     ordered = sorted(by_day.items(), key=lambda x: x[0])
+    '''
+    ordered_open = sorted(by_open.items(), key=lambda x: x[0])
+    ordered_high = sorted(by_high.items(), key=lambda x: x[0])
+    ordered_low = sorted(by_low.items(), key=lambda x: x[0])
+    ordered_volume = sorted(by_volume.items(), key=lambda x: x[0])
+    '''
     return ordered[-limit:]
 
 
@@ -78,8 +84,8 @@ def main() -> None:
 
     rows = get_eth_daily_closes(limit=args.days)
     print(f"ETH/USD daily closes — last {len(rows)} days (UTC dates):\n")
-    for d, close in rows:
-        print(f"{d.isoformat()}\t{close:.2f}")
+    for d, (low, high, open_price, close, volume) in rows:
+        print(f"{d.isoformat()}\t{low:.2f}\t{high:.2f}\t{open_price:.2f}\t{close:.2f}\t{volume:.2f}")
 
 
 if __name__ == "__main__":
