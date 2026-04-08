@@ -19,7 +19,7 @@ GRANULARITY_1_DAY_S = 86400
 MAX_CANDLES_PER_REQUEST = 300
 
 
-def get_eth_daily_closes(limit: int = 365) -> list[tuple[date, float]]:
+def get_daily_prices(limit: int = 365) -> list[tuple[date, float]]:
     """
     Return (UTC calendar date, daily close in USD) — one row per day.
 
@@ -68,11 +68,10 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    rows = get_eth_daily_closes(limit=args.days)
+    rows = get_daily_prices(limit=args.days)
     print(f"ETH/USD daily closes — last {len(rows)} days (UTC dates):\n")
     for d, (low, high, open_price, close, volume) in rows:
         print(f"{d.isoformat()}\t{low:.2f}\t{high:.2f}\t{open_price:.2f}\t{close:.2f}\t{volume:.2f}")
-
 
 if __name__ == "__main__":
     main()
