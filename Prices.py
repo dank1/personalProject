@@ -10,8 +10,11 @@ from __future__ import annotations
 
 import argparse
 from datetime import date, datetime, timedelta, timezone
+from pathlib import Path
 
 import requests
+
+_SCRIPT_DIR = Path(__file__).resolve().parent
 
 # Coinbase Exchange: max 300 candles per request for daily granularity.
 COINBASE_ETH_CANDLES = "https://api.exchange.coinbase.com/products/ETH-USD/candles"
@@ -27,7 +30,7 @@ def get_daily_prices(limit: int = 365) -> list[tuple[date, float]]:
     or history runs out.
     """
     limit = max(1, limit)
-    by_day: dict[date, float, float, float, float, float] = {}
+    by_day: dict[date, tuple[float, float, float, float, float]] = {}
     end = datetime.now(timezone.utc)
 
     while len(by_day) < limit:
@@ -56,6 +59,26 @@ def get_daily_prices(limit: int = 365) -> list[tuple[date, float]]:
     return ordered[-limit:]
 
 
+def write_prices_to_file(
+    rows: list[tuple[date, tuple[float, float, float, float, float]]],
+    file_path: str | Path | None = None,
+) -> Path:
+    """
+    Write daily OHLCV rows to a tab-separated file (date, low, high, open, close, volume).
+
+    Default path: eth_daily_prices.tsv next to this script.
+    """
+    path = Path(file_path) if file_path is not None else _SCRIPT_DIR / "eth_daily_prices.tsv"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", encoding="utf-8") as f:
+        f.write("date\tlow\thigh\topen\tclose\tvolume\n")
+        for d, (low, high, open_price, close, volume) in rows:
+            f.write(
+                f"{d.isoformat()}\t{low:.8f}\t{high:.8f}\t{open_price:.8f}\t{close:.8f}\t{volume:.8f}\n"
+            )
+    return path
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="ETH/USD daily closing prices (Coinbase Exchange, 1d candles)",
@@ -72,6 +95,8 @@ def main() -> None:
     print(f"ETH/USD daily closes — last {len(rows)} days (UTC dates):\n")
     for d, (low, high, open_price, close, volume) in rows:
         print(f"{d.isoformat()}\t{low:.2f}\t{high:.2f}\t{open_price:.2f}\t{close:.2f}\t{volume:.2f}")
+    
+    write_prices_to_file(rows)
 
 if __name__ == "__main__":
     main()
