@@ -18,7 +18,9 @@ _SCRIPT_DIR = Path(__file__).resolve().parent
 
 # Coinbase Exchange: max 300 candles per request for daily granularity.
 COINBASE_ETH_CANDLES = "https://api.exchange.coinbase.com/products/ETH-USD/candles"
-ETH_FILE_PATH = _SCRIPT_DIR / "eth_daily_prices.tsv"
+ETH_FILE_PATH = _SCRIPT_DIR / "prices" / "eth_daily_prices.tsv"
+BTC_FILE_PATH = _SCRIPT_DIR / "prices" / "btc_daily_prices.tsv"
+BTC_CANDLES_URL = "https://api.exchange.coinbase.com/products/BTC-USD/candles"
 GRANULARITY_1_DAY_S = 86400
 MAX_CANDLES_PER_REQUEST = 300
 
@@ -94,11 +96,12 @@ def main() -> None:
     args = parser.parse_args()
 
     rows = get_daily_prices(limit=args.days, file_path=COINBASE_ETH_CANDLES)
+    write_prices_to_file(rows, file_name=ETH_FILE_PATH)
+    rows = get_daily_prices(limit=args.days, file_path=BTC_CANDLES_URL)
+    write_prices_to_file(rows, file_name=BTC_FILE_PATH)
     print(f"ETH/USD daily closes — last {len(rows)} days (UTC dates):\n")
     for d, (low, high, open_price, close, volume) in rows:
         print(f"{d.isoformat()}\t{low:.2f}\t{high:.2f}\t{open_price:.2f}\t{close:.2f}\t{volume:.2f}")
-    
-    write_prices_to_file(rows, file_name=ETH_FILE_PATH)
 
 if __name__ == "__main__":
     main()
