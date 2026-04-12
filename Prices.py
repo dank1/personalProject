@@ -20,7 +20,23 @@ _SCRIPT_DIR = Path(__file__).resolve().parent
 COINBASE_ETH_CANDLES = "https://api.exchange.coinbase.com/products/ETH-USD/candles"
 ETH_FILE_PATH = _SCRIPT_DIR / "prices" / "eth_daily_prices.tsv"
 BTC_FILE_PATH = _SCRIPT_DIR / "prices" / "btc_daily_prices.tsv"
+XRP_FILE_PATH = _SCRIPT_DIR / "prices" / "xrp_daily_prices.tsv"
 BTC_CANDLES_URL = "https://api.exchange.coinbase.com/products/BTC-USD/candles"
+XRP_CANDLES_URL = "https://api.exchange.coinbase.com/products/XRP-USD/candles"
+DOGE_FILE_PATH = _SCRIPT_DIR / "prices" / "doge_daily_prices.tsv"
+DOGE_CANDLES_URL = "https://api.exchange.coinbase.com/products/DOGE-USD/candles"
+BNB_FILE_PATH = _SCRIPT_DIR / "prices" / "bnb_daily_prices.tsv"
+BNB_CANDLES_URL = "https://api.exchange.coinbase.com/products/BNB-USD/candles"
+SOL_FILE_PATH = _SCRIPT_DIR / "prices" / "sol_daily_prices.tsv"
+SOL_CANDLES_URL = "https://api.exchange.coinbase.com/products/SOL-USD/candles"
+TRX_FILE_PATH = _SCRIPT_DIR / "prices" / "trx_daily_prices.tsv"
+TRX_CANDLES_URL = "https://api.exchange.coinbase.com/products/TRX-USD/candles"
+HYPE_FILE_PATH = _SCRIPT_DIR / "prices" / "hype_daily_prices.tsv"
+HYPE_CANDLES_URL = "https://api.exchange.coinbase.com/products/HYPE-USD/candles"
+LEO_FILE_PATH = _SCRIPT_DIR / "prices" / "leo_daily_prices.tsv"
+LEO_CANDLES_URL = "https://api.exchange.coinbase.com/products/LEO-USD/candles"
+ADA_FILE_PATH = _SCRIPT_DIR / "prices" / "ada_daily_prices.tsv"
+ADA_CANDLES_URL = "https://api.exchange.coinbase.com/products/ADA-USD/candles"
 GRANULARITY_1_DAY_S = 86400
 MAX_CANDLES_PER_REQUEST = 300
 
@@ -94,11 +110,28 @@ def main() -> None:
         help="Number of most recent daily closes to show (default 30)",
     )
     args = parser.parse_args()
-
+    '''
     rows = get_daily_prices(limit=args.days, file_path=COINBASE_ETH_CANDLES)
     write_prices_to_file(rows, file_name=ETH_FILE_PATH)
     rows = get_daily_prices(limit=args.days, file_path=BTC_CANDLES_URL)
     write_prices_to_file(rows, file_name=BTC_FILE_PATH)
+    rows = get_daily_prices(limit=args.days, file_path=XRP_CANDLES_URL)
+    write_prices_to_file(rows, file_name=XRP_FILE_PATH)
+    rows = get_daily_prices(limit=args.days, file_path=DOGE_CANDLES_URL)
+    write_prices_to_file(rows, file_name=DOGE_FILE_PATH)
+    rows = get_daily_prices(limit=args.days, file_path=BNB_CANDLES_URL)
+    write_prices_to_file(rows, file_name=BNB_FILE_PATH)
+    rows = get_daily_prices(limit=args.days, file_path=SOL_CANDLES_URL)
+    write_prices_to_file(rows, file_name=SOL_FILE_PATH)
+    rows = get_daily_prices(limit=args.days, file_path=TRX_CANDLES_URL)
+    write_prices_to_file(rows, file_name=TRX_FILE_PATH)
+    '''
+    rows = get_daily_prices(limit=args.days, file_path=HYPE_CANDLES_URL)
+    write_prices_to_file(rows, file_name=HYPE_FILE_PATH)
+    rows = get_daily_prices(limit=args.days, file_path=LEO_CANDLES_URL)
+    write_prices_to_file(rows, file_name=LEO_FILE_PATH)
+    rows = get_daily_prices(limit=args.days, file_path=ADA_CANDLES_URL)
+    write_prices_to_file(rows, file_name=ADA_FILE_PATH)
     print(f"ETH/USD daily closes — last {len(rows)} days (UTC dates):\n")
     for d, (low, high, open_price, close, volume) in rows:
         print(f"{d.isoformat()}\t{low:.2f}\t{high:.2f}\t{open_price:.2f}\t{close:.2f}\t{volume:.2f}")
