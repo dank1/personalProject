@@ -18,11 +18,12 @@ _SCRIPT_DIR = Path(__file__).resolve().parent
 
 # Coinbase Exchange: max 300 candles per request for daily granularity.
 COINBASE_ETH_CANDLES = "https://api.exchange.coinbase.com/products/ETH-USD/candles"
+ETH_FILE_PATH = _SCRIPT_DIR / "eth_daily_prices.tsv"
 GRANULARITY_1_DAY_S = 86400
 MAX_CANDLES_PER_REQUEST = 300
 
 
-def get_daily_prices(limit: int = 365) -> list[tuple[date, float]]:
+def get_daily_prices(limit: int = 365, file_path: str | Path | None = None) -> list[tuple[date, float]]:
     """
     Return (UTC calendar date, daily close in USD) — one row per day.
 
@@ -40,7 +41,7 @@ def get_daily_prices(limit: int = 365) -> list[tuple[date, float]]:
             "start": start.isoformat(),
             "end": end.isoformat(),
         }
-        response = requests.get(COINBASE_ETH_CANDLES, params=params, timeout=30)
+        response = requests.get(file_path, params=params, timeout=30)
         response.raise_for_status()
         batch = response.json()
         if not batch:
@@ -62,13 +63,14 @@ def get_daily_prices(limit: int = 365) -> list[tuple[date, float]]:
 def write_prices_to_file(
     rows: list[tuple[date, tuple[float, float, float, float, float]]],
     file_path: str | Path | None = None,
+    file_name: str | Path | None = None
 ) -> Path:
     """
     Write daily OHLCV rows to a tab-separated file (date, low, high, open, close, volume).
 
     Default path: eth_daily_prices.tsv next to this script.
     """
-    path = Path(file_path) if file_path is not None else _SCRIPT_DIR / "eth_daily_prices.tsv"
+    path = Path(file_path) if file_path is not None else file_name
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", encoding="utf-8") as f:
         f.write("date\tlow\thigh\topen\tclose\tvolume\n")
@@ -91,12 +93,12 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    rows = get_daily_prices(limit=args.days)
+    rows = get_daily_prices(limit=args.days, file_path=COINBASE_ETH_CANDLES)
     print(f"ETH/USD daily closes — last {len(rows)} days (UTC dates):\n")
     for d, (low, high, open_price, close, volume) in rows:
         print(f"{d.isoformat()}\t{low:.2f}\t{high:.2f}\t{open_price:.2f}\t{close:.2f}\t{volume:.2f}")
     
-    write_prices_to_file(rows)
+    write_prices_to_file(rows, file_name=ETH_FILE_PATH)
 
 if __name__ == "__main__":
     main()
