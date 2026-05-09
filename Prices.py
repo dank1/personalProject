@@ -110,7 +110,7 @@ def main() -> None:
         help="Number of most recent daily closes to show (default 30)",
     )
     args = parser.parse_args()
-    '''
+    
     rows = get_daily_prices(limit=args.days, file_path=COINBASE_ETH_CANDLES)
     write_prices_to_file(rows, file_name=ETH_FILE_PATH)
     rows = get_daily_prices(limit=args.days, file_path=BTC_CANDLES_URL)
@@ -132,8 +132,9 @@ def main() -> None:
     rows = get_daily_prices(limit=args.days, file_path=LEO_CANDLES_URL)
     write_prices_to_file(rows, file_name=LEO_FILE_PATH)
     rows = get_daily_prices(limit=args.days, file_path=ADA_CANDLES_URL)
+    '''
     write_prices_to_file(rows, file_name=ADA_FILE_PATH)
-    
+
     print(f"ETH/USD daily closes — last {len(rows)} days (UTC dates):\n")
     for d, (low, high, open_price, close, volume) in rows:
         print(f"{d.isoformat()}\t{low:.2f}\t{high:.2f}\t{open_price:.2f}\t{close:.2f}\t{volume:.2f}")
